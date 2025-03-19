@@ -3,6 +3,7 @@ import React, { useRef, useState } from 'react';
 import WebTorrent from 'webtorrent';
 import { WebRtc } from '../../utils/webrtc';
 import { Viewer } from '../../utils/Viewer';
+import { useNavigate } from 'react-router-dom';
 
 const Connect = () => {
     const mainClass = new WebRtc();
@@ -11,6 +12,7 @@ const Connect = () => {
     const [isStreaming, setIsStreaming] = useState(false);
     const [magnetLink, setMagnetLink] = useState('');
     const [inputLink, setInputLink] = useState('');
+    const navigate = useNavigate();
 
     /** ✅ Convert MediaStream into a Blob and Seed via WebTorrent */
     const startStream = async () => {
@@ -65,12 +67,7 @@ const Connect = () => {
     const joinStream = () => {
         if (!inputLink.trim()) return;
 
-        viewer.playStream(inputLink, (url) => {
-            if (videoRef.current) {
-                videoRef.current.src = url;
-                videoRef.current.play();
-            }
-        });
+        viewer.playStream(inputLink);
     };
 
     return (
@@ -79,7 +76,7 @@ const Connect = () => {
 
                 {/* Video Container */}
                 <div className='h-[60%] w-[66%] p-8 md:h-[500px] md:w-[880px] bg-black rounded-3xl'>
-                    <video ref={videoRef} id="remoteVideo" autoPlay playsInline muted className='h-full w-full bg-white rounded-xl object-cover' />
+                    <video ref={videoRef} id="remoteVideo" autoPlay playsInline controls={false} className='h-full w-full bg-white rounded-xl object-cover' controls />
                 </div>
 
                 <div id="controls" className='flex flex-col lg:flex-row gap-12 items-center'>
@@ -100,7 +97,7 @@ const Connect = () => {
 
                     <button 
                         className='py-4 px-10 bg-blue-500 rounded-3xl hover:cursor-pointer hover:bg-blue-800' 
-                        onClick={startStream}
+                        onClick={()=>navigate('/stream')}
                     >
                         Start Stream
                     </button>
