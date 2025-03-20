@@ -20,7 +20,6 @@ This project enables **serverless, peer-to-peer (P2P) live streaming** where **b
 - **WebTorrent** → P2P streaming using `magnet:` links  
 - **WebRTC** → Captures & shares live video  
 - **MediaRecorder API** → Converts streams into WebM chunks  
-- **DHT (Distributed Hash Table)** → Finds peers without a central server  
 - **React + Vite** → Frontend for streaming & viewing  
 
 ---
