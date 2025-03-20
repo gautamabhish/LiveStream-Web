@@ -1,7 +1,7 @@
 // @ts-nocheck
 import React, { useRef, useState } from 'react';
 import WebTorrent from 'webtorrent';
-import { WebRtc } from '../../utils/webrtc';
+import { WebRtc } from '../../utils/BroadCaster';
 import { Viewer } from '../../utils/Viewer';
 import { useNavigate } from 'react-router-dom';
 
@@ -76,7 +76,7 @@ const Connect = () => {
 
                 {/* Video Container */}
                 <div className='h-[60%] w-[66%] p-8 md:h-[500px] md:w-[880px] bg-black rounded-3xl'>
-                    <video ref={videoRef} id="remoteVideo" autoPlay playsInline controls={false} className='h-full w-full bg-white rounded-xl object-cover' controls />
+                    <video ref={videoRef} id="remoteVideo" autoPlay playsInline controls={false} className='h-full w-full bg-white rounded-xl object-cover'  />
                 </div>
 
                 <div id="controls" className='flex flex-col lg:flex-row gap-12 items-center'>

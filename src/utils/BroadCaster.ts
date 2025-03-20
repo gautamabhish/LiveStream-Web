@@ -1,37 +1,91 @@
 import { Base } from "./Base";
-import WebTorrent from "webtorrent"
-export class BroadCaster extends Base {
-    private latestMagnetURI: string = "";
 
-    /** ✅ Ensure WebTorrent Client is Available */
-    private ensureClient() {
-        if (!this.client) {
-            console.log("🔄 Reinitializing WebTorrent client...");
-            this.client = new WebTorrent();
+export class Broadcaster extends Base {
+    private stream: MediaStream | null = null;
+    private mediaRecorder: MediaRecorder | null = null;
+    private chunks: BlobPart[] = [];
+    private latestMagnetURI: string = "";
+    private previousMagnetURI: string | null = null;
+    private chunkMap: Map<string, string> = new Map(); // Stores next-chunk links
+
+    constructor() {
+        super();
+    }
+
+    /** ✅ Get Media Stream & Start Chunking */
+    public async startStream(constraints: MediaStreamConstraints): Promise<string> {
+        try {
+            this.stopStream(); // ✅ Stop previous streams if running
+
+            this.stream = await navigator.mediaDevices.getUserMedia(constraints);
+            this.mediaRecorder = new MediaRecorder(this.stream, { mimeType: "video/webm" });
+
+            this.mediaRecorder.ondataavailable = async (event) => {
+                this.chunks.push(event.data);
+
+                if (this.chunks.length >= 5) {
+                    const blob = new Blob(this.chunks, { type: "video/webm" });
+                    this.chunks = [];
+                    await this.seedVideoChunk(blob);
+                }
+            };
+
+            this.mediaRecorder.start(1000); // ✅ Capture video every 1s
+            console.log("🎥 Streaming started...");
+
+            return new Promise((resolve) => {
+                setTimeout(() => resolve(this.latestMagnetURI), 2000); // Return first link after 2s
+            });
+        } catch (error) {
+            console.error("❌ Error accessing media devices.", error);
+            throw error;
         }
     }
 
-  
-    public async seedVideoChunk(blob: Blob): Promise<void> {
-        this.ensureClient(); // ✅ Ensure WebTorrent is running
+    /** ✅ Seed Video Chunks */
+    private async seedVideoChunk(blob: Blob): Promise<void> {
+        this.ensureClient();
 
-        this.client.seed(blob, (torrent: any) => {
-            this.latestMagnetURI = torrent.magnetURI;
-            console.log("🔹 Seeding chunk:", this.latestMagnetURI);
+        this.client.seed(blob, (torrent) => {
+            const magnetURI = torrent.magnetURI;
+
+            // ✅ Store reference to next chunk
+            if (this.previousMagnetURI) {
+                this.chunkMap.set(this.previousMagnetURI, magnetURI);
+            }
+
+            this.previousMagnetURI = magnetURI;
+            this.latestMagnetURI = magnetURI;
+
+            console.log("🔹 Seeding chunk:", magnetURI);
         });
     }
 
-    public getLatestMagnetURI(): string {
+    /** ✅ Stop Stream & Seeding */
+    public stopStream(): void {
+        console.log("🛑 Stopping stream...");
+
+        if (this.stream) {
+            this.stream.getTracks().forEach((track) => track.stop());
+            this.stream = null;
+        }
+
+        if (this.mediaRecorder && this.mediaRecorder.state !== "inactive") {
+            this.mediaRecorder.stop();
+            this.mediaRecorder = null;
+        }
+
+        this.client.destroy();
+        this.latestMagnetURI = "";
+    }
+
+    /** ✅ Get Latest Magnet URI */
+    public getFirstMagnetURI(): string {
         return this.latestMagnetURI;
     }
 
-    /** ✅ Destroy WebTorrent Client */
-    public stopSeeding() {
-        if (this.client) {
-            console.log(" Stopping WebTorrent seeding...");
-            this.client.destroy();
-            this.client = null; //  Mark as null so it can be reinitialized
-            this.latestMagnetURI = ""; //  Reset Magnet URI
-        }
+    /** ✅ Get Next Chunk URI */
+    public getNextMagnetURI(currentMagnetURI: string): string | null {
+        return this.chunkMap.get(currentMagnetURI) || null;
     }
 }

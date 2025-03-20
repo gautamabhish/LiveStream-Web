@@ -1,6 +1,6 @@
 // @ts-nocheck
 import React, { useState, useRef, useEffect } from "react";
-import { WebRtc } from "../../utils/webrtc";
+import { WebRtc } from "../../utils/BroadCaster";
 
 const StreamUI = () => {
     const webrtc = new WebRtc();
@@ -16,31 +16,27 @@ const StreamUI = () => {
     const [selectedAudioDevice, setSelectedAudioDevice] = useState("");
     const [showAudioOptions, setShowAudioOptions] = useState(false);
 
-    /** ✅ Get List of Video & Audio Input Devices */
+    /** ✅ Fetch Video & Audio Devices */
     useEffect(() => {
         async function fetchDevices() {
             const devices = await navigator.mediaDevices.enumerateDevices();
-
-            // Filter video and audio devices
             setVideoSources(devices.filter(device => device.kind === "videoinput"));
             setAudioSources(devices.filter(device => device.kind === "audioinput"));
         }
-
         fetchDevices();
     }, []);
 
     /** ✅ Start Stream with Selected Video & Audio Source */
     const startStream = async () => {
         try {
-            const stream = await webrtc.getUsermedia({ 
-                video: selectedVideoDevice ? { deviceId: { exact: selectedVideoDevice } } : true, 
-                audio: selectedAudioDevice ? { deviceId: { exact: selectedAudioDevice } } : true
+            const stream = await webrtc.getUsermedia({
+                video: selectedVideoDevice ? { deviceId: { exact: selectedVideoDevice } } : false, 
+                audio: selectedAudioDevice ? { deviceId: { exact: selectedAudioDevice } } : false
             });
 
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
             }
-
             console.log("🎥 Streaming started...");
         } catch (error) {
             console.error("❌ Error starting stream:", error);
@@ -54,14 +50,13 @@ const StreamUI = () => {
             videoRef.current.srcObject = null; // Clear video
         }
         console.log("❌ Streaming ended...");
-        
     };
 
     return (
         <div className="flex flex-col items-center min-h-screen bg-gray-900 text-white">
             {/* Video Container */}
             <div className="relative w-full max-w-screen-lg m-2 bg-gray-800 rounded-xl overflow-hidden">
-                <video ref={videoRef} className="w-full h-96 bg-black rounded-xl" autoPlay playsInline muted />
+                <video ref={videoRef} className="w-full h-96 object-cover bg-black rounded-xl" autoPlay playsInline muted />
 
                 {/* Control Bar */}
                 <div className="absolute bottom-0 left-0 right-0 flex bg-black bg-opacity-60 py-4 text-xl items-center justify-evenly">
@@ -70,18 +65,22 @@ const StreamUI = () => {
                     <div>
                         {showVideoOptions && (
                             <div className="absolute bottom-16 bg-gray-800 p-4 rounded-lg">
-                                {videoSources.map((device, index) => (
-                                    <button 
-                                        key={index} 
-                                        onClick={() => { 
-                                            setSelectedVideoDevice(device.deviceId);
-                                            setShowVideoOptions(false);
-                                        }}
-                                        className="block px-4 py-2 bg-gray-700 rounded-lg w-full mt-2"
-                                    >
-                                        {device.label || `Camera ${index + 1}`}
-                                    </button>
-                                ))}
+                                {videoSources.length > 0 ? (
+                                    videoSources.map((device, index) => (
+                                        <button 
+                                            key={index} 
+                                            onClick={() => { 
+                                                setSelectedVideoDevice(device.deviceId);
+                                                setShowVideoOptions(false);
+                                            }}
+                                            className="block px-4 py-2 bg-gray-700 rounded-lg w-full mt-2"
+                                        >
+                                            {device.label || `Camera ${index + 1}`}
+                                        </button>
+                                    ))
+                                ) : (
+                                    <p className="text-center text-gray-400">No cameras found</p>
+                                )}
                             </div>
                         )}
                         <button 
@@ -96,18 +95,22 @@ const StreamUI = () => {
                     <div>
                         {showAudioOptions && (
                             <div className="absolute bottom-16 bg-gray-800 p-4 rounded-lg">
-                                {audioSources.map((device, index) => (
-                                    <button 
-                                        key={index} 
-                                        onClick={() => { 
-                                            setSelectedAudioDevice(device.deviceId);
-                                            setShowAudioOptions(false);
-                                        }}
-                                        className="block px-4 py-2 bg-gray-700 rounded-lg w-full mt-2"
-                                    >
-                                        {device.label || `Microphone ${index + 1}`}
-                                    </button>
-                                ))}
+                                {audioSources.length > 0 ? (
+                                    audioSources.map((device, index) => (
+                                        <button 
+                                            key={index} 
+                                            onClick={() => { 
+                                                setSelectedAudioDevice(device.deviceId);
+                                                setShowAudioOptions(false);
+                                            }}
+                                            className="block px-4 py-2 bg-gray-700 rounded-lg w-full mt-2"
+                                        >
+                                            {device.label || `Microphone ${index + 1}`}
+                                        </button>
+                                    ))
+                                ) : (
+                                    <p className="text-center text-gray-400">No microphones found</p>
+                                )}
                             </div>
                         )}
                         <button 
