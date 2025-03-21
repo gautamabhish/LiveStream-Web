@@ -1,9 +1,9 @@
 // @ts-nocheck
 import React, { useState, useRef, useEffect } from "react";
-import { WebRtc } from "../../utils/BroadCaster";
+import { Broadcaster } from "../../utils/BroadCaster";
 
 const StreamUI = () => {
-    const webrtc = new WebRtc();
+    const webrtc = new Broadcaster();
     const videoRef = useRef<HTMLVideoElement>(null);
 
     // ✅ State Management
@@ -29,14 +29,10 @@ const StreamUI = () => {
     /** ✅ Start Stream with Selected Video & Audio Source */
     const startStream = async () => {
         try {
-            const stream = await webrtc.getUsermedia({
+            const stream = await webrtc.startStream({
                 video: selectedVideoDevice ? { deviceId: { exact: selectedVideoDevice } } : false, 
                 audio: selectedAudioDevice ? { deviceId: { exact: selectedAudioDevice } } : false
             });
-
-            if (videoRef.current) {
-                videoRef.current.srcObject = stream;
-            }
             console.log("🎥 Streaming started...");
         } catch (error) {
             console.error("❌ Error starting stream:", error);
@@ -56,10 +52,10 @@ const StreamUI = () => {
         <div className="flex flex-col items-center min-h-screen bg-gray-900 text-white">
             {/* Video Container */}
             <div className="relative w-full max-w-screen-lg m-2 bg-gray-800 rounded-xl overflow-hidden">
-                <video ref={videoRef} className="w-full h-96 object-cover bg-black rounded-xl" autoPlay playsInline muted />
+                <video  id="remoteVideo" className="w-full scale-x-[-1] h-96 object-cover bg-black rounded-xl" autoPlay playsInline muted />
 
                 {/* Control Bar */}
-                <div className="absolute bottom-0 left-0 right-0 flex bg-black bg-opacity-60 py-4 text-xl items-center justify-evenly">
+                <div className="absolute bottom-0 left-0 right-0 flex bg-transparent bg-opacity-60 py-4 text-xl items-center justify-evenly">
                     
                     {/* Video Source Selection */}
                     <div>

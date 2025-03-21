@@ -1,4 +1,5 @@
-import WebTorrent from "webtorrent";
+//@ts-nocheck
+
 
 export class Base {
     public client: WebTorrent.Instance;

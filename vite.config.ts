@@ -13,6 +13,14 @@ export default defineConfig({
       events: 'events',
     },
   },
+  optimizeDeps: {
+    exclude: ["bittorrent-dht", "load-ip-set"], // Exclude Node.js-only modules
+  },
+  build: {
+    rollupOptions: {
+      external: ["bittorrent-dht", "load-ip-set"], // Ensure they're not bundled
+    },
+  },
   define: {
     // By default, Vite doesn't include shims for NodeJS/
     // necessary for segment analytics lib to work

@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { Base } from "./Base";
 
 export class Broadcaster extends Base {
@@ -16,7 +17,7 @@ export class Broadcaster extends Base {
     public async startStream(constraints: MediaStreamConstraints): Promise<string> {
         try {
             this.stopStream(); // ✅ Stop previous streams if running
-
+            console.log(constraints)
             this.stream = await navigator.mediaDevices.getUserMedia(constraints);
             this.mediaRecorder = new MediaRecorder(this.stream, { mimeType: "video/webm" });
 
@@ -32,6 +33,10 @@ export class Broadcaster extends Base {
 
             this.mediaRecorder.start(1000); // ✅ Capture video every 1s
             console.log("🎥 Streaming started...");
+            const video = document.getElementById("remoteVideo") as HTMLVideoElement;
+            if(video){
+                video.srcObject = this.stream;
+            } 
 
             return new Promise((resolve) => {
                 setTimeout(() => resolve(this.latestMagnetURI), 2000); // Return first link after 2s

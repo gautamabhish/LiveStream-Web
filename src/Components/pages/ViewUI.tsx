@@ -1,12 +1,12 @@
 // @ts-nocheck
 import React, { useRef, useState } from 'react';
-import WebTorrent from 'webtorrent';
-import { WebRtc } from '../../utils/BroadCaster';
+
+import { Broadcaster } from '../../utils/BroadCaster';
 import { Viewer } from '../../utils/Viewer';
 import { useNavigate } from 'react-router-dom';
 
 const Connect = () => {
-    const mainClass = new WebRtc();
+    const mainClass = new Broadcaster();
     const viewer = new Viewer();
     const videoRef = useRef<HTMLVideoElement>(null);
     const [isStreaming, setIsStreaming] = useState(false);

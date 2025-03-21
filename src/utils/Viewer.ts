@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { Base } from "./Base";
 
 export class Viewer extends Base {
