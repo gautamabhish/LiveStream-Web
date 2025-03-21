@@ -14,55 +14,6 @@ const Connect = () => {
     const [inputLink, setInputLink] = useState('');
     const navigate = useNavigate();
 
-    /** ✅ Convert MediaStream into a Blob and Seed via WebTorrent */
-    const startStream = async () => {
-        if (isStreaming) return;
-
-        try {
-            // ✅ Get WebRTC video stream
-            const stream = await mainClass.getUsermedia({ video: true, audio: false });
-
-            if (videoRef.current) {
-                videoRef.current.srcObject = stream;
-            }
-
-            // ✅ Convert MediaStream to Blob using MediaRecorder
-            const chunks: Blob[] = [];
-            const recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
-
-            recorder.ondataavailable = (event) => {
-                if (event.data.size > 0) {
-                    chunks.push(event.data);
-                }
-            };
-
-            recorder.onstop = async () => {
-                const blob = new Blob(chunks, { type: 'video/webm' });
-
-                // ✅ Seed Blob with WebTorrent
-                const client = new WebTorrent();
-                client.seed(blob, (torrent) => {
-                    console.log("🔹 Seeding stream:", torrent.magnetURI);
-                    setMagnetLink(torrent.magnetURI);
-                });
-            };
-
-            recorder.start(1000); // Record in 1-second intervals
-            setIsStreaming(true);
-        } catch (error) {
-            console.error('❌ Error accessing media:', error);
-        }
-    };
-
-    /** ✅ Stop Streaming */
-    const stopStream = () => {
-        mainClass.stopStream();
-        if (videoRef.current) {
-            videoRef.current.srcObject = null;
-        }
-        setIsStreaming(false);
-    };
-
     /** ✅ Join Stream from Magnet Link */
     const joinStream = () => {
         if (!inputLink.trim()) return;

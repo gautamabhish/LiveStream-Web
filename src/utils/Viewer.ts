@@ -10,7 +10,7 @@ export class Viewer extends Base {
     private async playChunk(magnetURI: string): Promise<void> {
         this.client.add(magnetURI, async (torrent) => {
             console.log("✅ Downloaded chunk:", magnetURI);
-
+            console.log(torrent)
             const file = torrent.files.find((file) =>
                 file.name.match(/\.(mp4|webm|ogg|mkv|avi|mov|flv)$/i)
             );

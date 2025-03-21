@@ -17,7 +17,6 @@ export class Broadcaster extends Base {
     public async startStream(constraints: MediaStreamConstraints): Promise<string> {
         try {
             this.stopStream(); // ✅ Stop previous streams if running
-            console.log(constraints)
             this.stream = await navigator.mediaDevices.getUserMedia(constraints);
             this.mediaRecorder = new MediaRecorder(this.stream, { mimeType: "video/webm" });
 
@@ -51,7 +50,7 @@ export class Broadcaster extends Base {
     private async seedVideoChunk(blob: Blob): Promise<void> {
         this.ensureClient();
 
-        this.client.seed(blob, (torrent) => {
+        this.client.seed(blob ,{name:`${Date.now()}.mp4`,} ,(torrent) => {
             const magnetURI = torrent.magnetURI;
 
             // ✅ Store reference to next chunk
@@ -80,7 +79,7 @@ export class Broadcaster extends Base {
             this.mediaRecorder = null;
         }
 
-        this.client.destroy();
+        this.client?.destroy();
         this.latestMagnetURI = "";
     }
 
