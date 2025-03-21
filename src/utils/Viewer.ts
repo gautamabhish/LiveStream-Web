@@ -25,21 +25,33 @@ export class Viewer extends Base {
                 console.error("❌ Video element not found!");
                 return;
             }
-
-            const blob = await file.blob();
-            const blobURL = URL.createObjectURL(blob);
-            video.src = blobURL;
-            video.play();
-
-            console.log("🎥 Playing chunk:", magnetURI);
-
-            // ✅ Fetch the next chunk
-            const nextMagnetURI = this.getNextMagnetURI(magnetURI);
-            if (nextMagnetURI) {
-                setTimeout(() => this.playChunk(nextMagnetURI), 5000);
-            } else {
-                console.log("✅ Stream Ended.");
-            }
+            console.log(file);
+            
+            file.getBlob((err, blob) => {
+                if (err || !blob || blob.size === 0) {
+                    console.error("❌ Error retrieving blob:", err);
+                    return;
+                }
+    
+                const blobURL = URL.createObjectURL(blob);
+                console.log("✅ Blob URL Created:", blobURL);
+    
+                // ✅ Set video source to Blob URL
+                video.src = blobURL;
+                video.play();
+    
+                console.log("🎥 Playing chunk:", magnetURI);
+    
+                // ✅ Fetch the next chunk
+                setTimeout(() => {
+                    const nextMagnetURI = this.getNextMagnetURI(magnetURI);
+                    if (nextMagnetURI) {
+                        this.playChunk(nextMagnetURI);
+                    } else {
+                        console.log("✅ Stream Ended.");
+                    }
+                }, 5000);
+            });
         });
     }
 
