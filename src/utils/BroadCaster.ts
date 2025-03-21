@@ -49,8 +49,8 @@ export class Broadcaster extends Base {
     /** ✅ Seed Video Chunks */
     private async seedVideoChunk(blob: Blob): Promise<void> {
         this.ensureClient();
-
-        this.client.seed(blob ,{name:`${Date.now()}.mp4`,} ,(torrent) => {
+        const fileName = `live_chunk_${Date.now()}.mp4`; 
+        this.client.seed(blob,{name:fileName},(torrent) => {
             const magnetURI = torrent.magnetURI;
 
             // ✅ Store reference to next chunk
